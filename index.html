@@ -1,0 +1,410 @@
+<!DOCTYPE html>
+<html lang="en" dir="ltr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#071d22">
+<meta name="description" content="An interactive, bilingual 3D exploration of the Noble Qur'an, its structure, history, and worldwide reach.">
+<title>The Noble Qur'an — 3D Knowledge Explorer | القرآن الكريم</title>
+<style>
+:root {
+  color-scheme: dark;
+  --bg:#071d22;--bg2:#0d2930;--surface:#123038;--surface-soft:#163840;--line:#2b4b4c;
+  --text:#f3f2e9;--muted:#b4c2c0;--gold:#f1ca81;--gold-dim:#c79e57;--mint:#7fc5b4;
+  --paper:#fff9ea;--ink:#3b392f;--paper-muted:#786d55;--shadow:rgba(0,0,0,.36);
+  --pill:#193942;--page-gold:#a98746;
+}
+body.light {
+  color-scheme: light;
+  --bg:#f5f4ee;--bg2:#e9eee9;--surface:#ffffff;--surface-soft:#f7f8f3;--line:#d9dfda;
+  --text:#16323a;--muted:#617275;--gold:#93691f;--gold-dim:#ad8240;--mint:#276b64;
+  --shadow:rgba(45,68,66,.13);--pill:#edf2ee;
+}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{margin:0;min-width:300px;background:var(--bg);color:var(--text);font-family:Inter,"Segoe UI",Arial,sans-serif;transition:background .38s,color .38s;overflow-x:hidden}
+body:before{content:"";position:fixed;inset:0;pointer-events:none;background:radial-gradient(ellipse at 20% 8%,rgba(125,181,157,.09),transparent 35%),radial-gradient(ellipse at 92% 75%,rgba(200,144,76,.065),transparent 40%);z-index:-1}
+button{font:inherit;cursor:pointer}button:focus-visible,a:focus-visible{outline:3px solid var(--gold);outline-offset:4px}
+a{color:inherit}
+.app{max-width:1510px;margin:auto;padding:26px clamp(16px,3.2vw,54px) 36px}
+.topbar{display:flex;align-items:center;justify-content:space-between;gap:16px;padding:0 0 24px;border-bottom:1px solid var(--line)}
+.brand{display:flex;align-items:center;gap:13px;min-width:0}
+.brand-icon{width:45px;height:45px;display:grid;place-items:center;color:var(--gold);position:relative;flex:none}
+.brand-icon svg{width:44px;height:44px}.brand-name{font-family:Georgia,serif;letter-spacing:.05em;font-size:18px;font-weight:600;line-height:1.12}.brand-sub{color:var(--muted);font-size:10px;letter-spacing:.17em;text-transform:uppercase;margin-top:5px}
+.top-actions{display:flex;gap:10px;align-items:center}
+.toggle{display:flex;gap:7px;align-items:center;justify-content:center;border:1px solid var(--line);border-radius:100px;background:var(--pill);color:var(--text);padding:11px 16px;min-width:107px;min-height:42px;transition:background .2s,border-color .2s}.toggle:hover,.tiny-btn:hover,.nav-btn:hover{border-color:var(--gold-dim)}.toggle svg{height:16px;width:16px;flex:none}
+.hero{display:flex;align-items:end;justify-content:space-between;gap:18px;margin:34px 0 17px}
+.eyebrow{display:flex;align-items:center;gap:11px;color:var(--gold);font-size:11px;letter-spacing:.24em;text-transform:uppercase;font-weight:700}.eyebrow:before{content:"";display:block;width:28px;height:1px;background:var(--gold)}
+h1{font-family:Georgia,"Times New Roman",serif;font-weight:500;font-size:clamp(34px,3.6vw,58px);line-height:1.13;letter-spacing:-.035em;margin:14px 0 12px;max-width:850px}
+.hero-copy{max-width:740px;color:var(--muted);line-height:1.75;font-size:15px;margin:0}
+.hero-ornament{font-size:85px;color:var(--gold-dim);opacity:.26;line-height:1;flex:none;user-select:none}
+.main-layout{display:grid;grid-template-columns:minmax(0,1.62fr) minmax(325px,.84fr);gap:22px;align-items:stretch}
+.visual-card{background:linear-gradient(160deg,var(--bg2),var(--bg) 95%);border:1px solid var(--line);border-radius:23px;min-width:0;position:relative;overflow:hidden;display:flex;flex-direction:column;box-shadow:0 20px 70px var(--shadow);}
+.visual-card:before{content:"";pointer-events:none;position:absolute;width:750px;height:480px;left:50%;top:38%;transform:translate(-50%,-50%);background:radial-gradient(ellipse,rgba(121,180,146,.16),rgba(189,146,78,.035) 48%,transparent 73%)}
+.visual-head{position:relative;display:flex;align-items:center;justify-content:space-between;gap:12px;padding:20px 25px 0;z-index:2;color:var(--muted);font-size:11px;letter-spacing:.12em;text-transform:uppercase}
+.live-label{display:flex;align-items:center;gap:8px}.status-dot{width:7px;height:7px;border-radius:50%;background:var(--mint);box-shadow:0 0 0 4px rgba(111,196,171,.1)}
+.tiny-btn{border:1px solid var(--line);border-radius:100px;background:transparent;color:var(--muted);padding:8px 11px;font-size:12px;display:flex;align-items:center;gap:6px}
+.stage{position:relative;min-height:490px;display:flex;align-items:center;justify-content:center;touch-action:pan-y;z-index:1}
+.stage.dragging .book-core{transition:transform .055s linear!important}
+.stage:before{content:"";position:absolute;width:min(82%,670px);height:44px;bottom:38px;left:50%;transform:translateX(-50%);border-radius:50%;background:rgba(0,0,0,.23);filter:blur(21px);pointer-events:none}
+.book-holder{position:absolute;left:50%;top:50%;width:700px;height:440px;transform:translate(-50%,-50%) scale(var(--scale,1));transform-origin:center;will-change:transform}
+.book-core{width:700px;height:440px;position:absolute;top:0;left:0;transform-style:preserve-3d;transform:translateX(175px) rotateX(var(--rx,5deg)) rotateY(var(--ry,-7deg));transition:transform 1.12s cubic-bezier(.2,.85,.22,1);filter:drop-shadow(12px 26px 19px rgba(0,0,0,.24))}
+.book-holder.opened .book-core{transform:translateX(0) rotateX(var(--rx,5deg)) rotateY(var(--ry,-7deg));transition:transform 1.12s cubic-bezier(.2,.85,.22,1)}
+.book-base{position:absolute;inset:0;width:50%;transform:translateZ(-12px);transition:width .6s .15s ease;border-radius:9px;background:linear-gradient(90deg,#103e3a,#1a534b 47%,#092f2d);box-shadow:0 0 0 5px #a77c3c}
+.book-holder.opened .book-base{width:100%}
+.book-base:after{content:"";position:absolute;inset:4px;border:3px solid #b68e4a;border-radius:4px}
+.closed-leaves{position:absolute;width:50%;height:98%;left:0;top:1%;border-radius:5px 4px 4px 5px;background:repeating-linear-gradient(0deg,#fff8e5 0 2px,#e4dcc8 2px 3px);box-shadow:-6px 6px 0 #b19d78;transform:translateZ(0)}
+.book-spread{position:absolute;inset:3px 1px;display:flex;direction:ltr;border-radius:7px;border:5px solid #906a34;overflow:hidden;transform:translateZ(3px);opacity:0;transition:opacity .32s ease;pointer-events:none;background:#fbf3de}
+.book-holder.opened .book-spread{opacity:1;transition-delay:.49s;pointer-events:auto}
+.book-spread:after{content:"";position:absolute;width:27px;left:50%;top:0;bottom:0;transform:translateX(-50%);background:linear-gradient(90deg,rgba(81,59,40,.17),rgba(255,255,255,.23) 40%,rgba(66,47,25,.2));pointer-events:none;z-index:3}
+.page{width:50%;height:100%;direction:inherit;padding:24px 25px 23px;color:var(--ink);background:linear-gradient(115deg,#fff8e9,#f3e9d5);position:relative;overflow:hidden;display:flex;flex-direction:column;min-width:0}
+.page-left{cursor:pointer;border-right:1px solid #d7c7a3;background:linear-gradient(95deg,#f7ebd2,#fff9ec)}
+.page-right{cursor:pointer;background:linear-gradient(80deg,#fbf2df,#fffaf0)}
+.page:before{content:"";position:absolute;inset:11px;border:1px solid rgba(168,130,67,.4);pointer-events:none;border-radius:2px}
+.page-header{display:flex;align-items:center;justify-content:space-between;gap:8px;border-bottom:1px solid #d5c49c;padding-bottom:9px;font-family:Georgia,serif;font-size:10px;letter-spacing:.095em;color:#96753e;text-transform:uppercase;position:relative;z-index:1}
+.page-mark{color:#a88a57;font-size:13px}
+.page h2{position:relative;font-family:Georgia,"Times New Roman",serif;font-size:27px;line-height:1.17;font-weight:500;margin:23px 0 9px;color:#294941;letter-spacing:-.03em;z-index:1}
+.page p{font-size:13px;line-height:1.7;margin:0;position:relative;z-index:1;color:#625e50}
+.page-divider{height:1px;background:linear-gradient(90deg,transparent,#b6945a,transparent);margin:17px 0;z-index:1}
+.page-small-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;z-index:1}
+.page-mini{border:1px solid #dbcba7;border-radius:7px;padding:13px 11px;background:rgba(255,255,255,.36)}
+.page-mini strong{display:block;font-family:Georgia,serif;font-size:23px;color:#2e544a;line-height:1.1;font-weight:500;font-variant-numeric:tabular-nums}
+.page-mini small{display:block;margin-top:7px;font-size:11px;line-height:1.4;color:#6e6758}
+.page-bottom{margin-top:auto;font-family:Georgia,serif;color:#b18d4e;text-align:center;font-size:12px;position:relative;z-index:1}
+.page-bismillah{font-family:"Amiri","Noto Naskh Arabic","Traditional Arabic",serif;color:#8c733f;text-align:center;font-size:24px;line-height:1.6;white-space:nowrap;margin:9px 0 8px;position:relative;z-index:1}
+.page-hero-num{font-family:Georgia,serif;font-size:61px;line-height:1.06;color:#275b50;text-align:center;margin:16px 0 0;z-index:1;position:relative;font-variant-numeric:tabular-nums;white-space:nowrap;letter-spacing:-.04em}
+.page-hero-label{text-align:center;font-weight:700;color:#8e713a;letter-spacing:.07em;text-transform:uppercase;position:relative;z-index:1;font-size:12px;line-height:1.45;max-width:245px;margin:7px auto 10px}
+.page-hero-note{text-align:center;position:relative;z-index:1;font-size:12px!important;line-height:1.65!important;margin:auto 8px!important}
+.page-footnote{position:relative;z-index:1;margin-top:auto;text-align:center;color:#ad8a50;font-family:Georgia,serif;font-size:12px}
+.book-cover{position:absolute;left:0;top:0;width:50%;height:100%;transform-origin:100% 50%;transform-style:preserve-3d;transform:translateZ(15px) rotateY(0deg);transition:transform 1.17s cubic-bezier(.2,.8,.25,1),opacity .16s linear;z-index:8;cursor:pointer;backface-visibility:visible}
+.book-holder.opened .book-cover{transform:translateZ(15px) rotateY(-180deg);opacity:0;transition:transform 1.17s cubic-bezier(.2,.8,.25,1),opacity .16s .96s;pointer-events:none}
+.cover-front,.cover-inside{position:absolute;inset:0;backface-visibility:hidden;border-radius:8px 4px 4px 8px;border:7px solid #143a32;box-shadow:0 0 0 2px #c0944c inset,2px 7px 14px #071b1b;background:radial-gradient(ellipse at 48% 42%,#1c6755 0%,#0e433b 62%,#092e29 100%);display:flex;align-items:center;justify-content:center;color:#efcf91}
+.cover-front:before,.cover-front:after{content:"";position:absolute;inset:12px;border:2px solid #c7a265;pointer-events:none;border-radius:2px}
+.cover-front:after{inset:21px;border:1px solid #a37c43}
+.cover-inside{transform:rotateY(180deg);background:#efe2c1;border-color:#815f36;box-shadow:inset 0 0 28px #cebd96}
+.cover-pattern{position:absolute;inset:35px;opacity:.17;background-image:repeating-conic-gradient(from 22.5deg at 50% 50%,transparent 0deg 15deg,#d6aa5c 15deg 17deg,transparent 17deg 45deg);background-size:55px 55px;border-radius:3px}
+.cover-content{position:relative;z-index:2;text-align:center;width:83%;display:flex;align-items:center;flex-direction:column;gap:13px}
+.cover-crest{width:84px;height:84px;display:grid;place-items:center;border:1px solid #d4b579;border-radius:50%;font-size:39px;margin-bottom:7px;box-shadow:0 0 0 6px rgba(228,190,112,.09)}
+.cover-arabic{font-family:"Amiri","Noto Naskh Arabic","Traditional Arabic",serif;font-size:40px;line-height:1.6;white-space:nowrap;font-weight:500;text-shadow:0 2px 4px rgba(0,0,0,.25)}
+.cover-en{font-family:Georgia,serif;font-size:13px;letter-spacing:.16em;line-height:1.6;border-top:1px solid rgba(218,182,117,.65);padding-top:13px}
+.cover-small{font-size:11px;letter-spacing:.16em;color:#d5b782}
+.cover-inside-symbol{font-size:70px;color:#b4914f;opacity:.35}
+.turn-sheet{position:absolute;left:50%;top:8px;width:calc(50% - 7px);height:calc(100% - 16px);transform-origin:0 50%;transform:translateZ(8px) rotateY(0);transform-style:preserve-3d;z-index:7;pointer-events:none;opacity:0}
+.turn-sheet.turning{opacity:1;animation:turnright .86s cubic-bezier(.42,.05,.25,1) both}
+.turn-sheet.turning.backwards{animation:turnleft .86s cubic-bezier(.42,.05,.25,1) both}
+.turn-front,.turn-back{position:absolute;inset:0;background:#fff6e5;backface-visibility:hidden;border:2px solid #d5c5a3;box-shadow:3px 3px 13px rgba(94,77,49,.2);display:grid;place-items:center;color:#c4a26e;font-size:78px;font-family:Georgia,serif}
+.turn-back{transform:rotateY(180deg);background:#f5ead2}
+@keyframes turnright{0%{transform:translateZ(9px) rotateY(0)}100%{transform:translateZ(9px) rotateY(-180deg)}}
+@keyframes turnleft{0%{transform:translateZ(9px) rotateY(-180deg)}100%{transform:translateZ(9px) rotateY(0)}}
+.stage-hint{position:absolute;bottom:5px;left:50%;transform:translateX(-50%);color:var(--muted);font-size:12px;text-align:center;opacity:.85;width:94%;pointer-events:none;letter-spacing:.015em}
+.visual-footer{position:relative;z-index:2;display:flex;align-items:center;justify-content:space-between;gap:14px;padding:18px 23px 21px;border-top:1px solid var(--line);flex-wrap:wrap}
+.pager{display:flex;gap:9px;align-items:center}.nav-btn{width:42px;height:42px;display:grid;place-items:center;border:1px solid var(--line);border-radius:50%;background:var(--pill);color:var(--text);transition:border-color .2s,transform .2s}.nav-btn:hover:not(:disabled){transform:translateY(-2px)}.nav-btn:disabled{opacity:.33;cursor:not-allowed}
+.nav-btn svg{width:17px;height:17px}.pager-count{direction:ltr;unicode-bidi:isolate;color:var(--gold);font-size:12px;font-variant-numeric:tabular-nums;letter-spacing:.11em;min-width:55px;text-align:center}
+.primary-btn{border:1px solid var(--gold);border-radius:50px;padding:12px 19px;color:#092d2c;background:linear-gradient(135deg,#f3d59b,#d8ad64);font-weight:700;font-size:13px;min-height:43px;display:inline-flex;align-items:center;gap:10px;box-shadow:0 5px 21px rgba(234,187,104,.12);transition:filter .2s}.primary-btn:hover{filter:brightness(1.06)}
+.details{background:var(--surface);border:1px solid var(--line);border-radius:23px;padding:25px;box-shadow:0 20px 70px var(--shadow);min-width:0;display:flex;flex-direction:column}
+.section-top{display:flex;align-items:center;justify-content:space-between;color:var(--gold);font-size:11px;font-weight:700;letter-spacing:.15em;text-transform:uppercase;gap:5px}
+.section-badge{font-size:11px;border:1px solid var(--line);border-radius:25px;padding:7px 10px;color:var(--muted);font-weight:500;letter-spacing:0;text-transform:none}
+.details h2{font-family:Georgia,serif;font-size:clamp(26px,2.3vw,36px);font-weight:500;letter-spacing:-.025em;margin:17px 0 11px;line-height:1.16}
+.description{color:var(--muted);font-size:13px;line-height:1.75;min-height:57px;margin:0 0 22px}
+.stat-grid{display:grid;grid-template-columns:1fr 1fr;gap:11px}
+.stat{border:1px solid var(--line);border-radius:14px;background:var(--surface-soft);padding:16px 14px;min-height:116px;position:relative;transition:transform .18s,border-color .18s}
+.stat:hover{transform:translateY(-3px);border-color:var(--gold-dim)}
+.stat-num{font-variant-numeric:tabular-nums;letter-spacing:-.035em;font-family:Georgia,serif;color:var(--gold);font-size:clamp(20px,1.85vw,29px);white-space:nowrap;line-height:1.3}.stat-label{font-size:12px;line-height:1.5;color:var(--text);margin-top:9px}.stat-meta{color:var(--muted);font-size:10px;line-height:1.5;margin-top:5px}
+.note{border-left:2px solid var(--gold-dim);margin-top:21px;padding:4px 0 4px 15px;font-size:12px;line-height:1.75;color:var(--muted)}
+.source-inline{display:flex;align-items:center;gap:7px;margin-top:auto;padding-top:21px;color:var(--muted);font-size:11px;line-height:1.55}
+.source-inline svg{width:15px;height:15px;flex:none;color:var(--gold)}
+.section-nav{display:flex;gap:9px;align-items:center;flex-wrap:wrap;margin-top:20px;margin-bottom:20px}
+.section-tab{border:1px solid var(--line);background:var(--pill);color:var(--muted);border-radius:99px;padding:10px 15px;font-size:12px;min-height:40px;transition:all .2s}
+.section-tab.active{background:var(--gold);color:#17322f;border-color:var(--gold);font-weight:700}
+.data-notice{display:grid;grid-template-columns:auto 1fr;gap:13px;align-items:start;padding:17px 19px;background:var(--surface);border:1px solid var(--line);border-radius:15px;margin-top:9px}
+.data-notice svg{color:var(--gold);width:19px;height:19px;margin-top:2px}.data-notice p{font-size:12px;color:var(--muted);line-height:1.7;margin:0}.data-notice strong{color:var(--text)}
+.references{border-top:1px solid var(--line);padding-top:21px;margin-top:28px}
+.references summary{cursor:pointer;color:var(--text);font-size:13px;font-weight:700;display:flex;align-items:center;justify-content:space-between;gap:10px}
+.references summary::marker{color:var(--gold)}
+.references p{color:var(--muted);font-size:12px;line-height:1.75}
+.references ul{display:grid;grid-template-columns:1fr 1fr;gap:11px 21px;margin:14px 0 0;padding-left:20px;color:var(--muted);font-size:12px;line-height:1.65}
+.references li::marker{color:var(--gold)}.references a{color:var(--mint);text-decoration-thickness:1px;text-underline-offset:3px}
+.footer{margin-top:24px;color:var(--muted);font-size:11px;text-align:center;letter-spacing:.015em}
+.footer a{color:var(--gold);font-weight:600;text-decoration:underline;text-underline-offset:3px;overflow-wrap:anywhere}.footer a:hover,.footer a:focus-visible{color:var(--text)}
+[dir="rtl"] body,body.ar{font-family:"Noto Sans Arabic",Tahoma,Arial,sans-serif}
+body.ar h1,body.ar .details h2,body.ar .page h2{font-family:"Amiri","Noto Naskh Arabic",Tahoma,serif;letter-spacing:0}
+body.ar h1{font-size:clamp(37px,3.55vw,56px);line-height:1.35}
+body.ar .brand-name{font-family:"Amiri",Tahoma,serif;letter-spacing:0}
+body.ar .eyebrow,body.ar .section-top,body.ar .brand-sub{letter-spacing:.025em}
+body.ar .eyebrow:before{order:0}
+body.ar .note{border-left:0;border-right:2px solid var(--gold-dim);padding:4px 15px 4px 0}
+body.ar .references ul{padding-left:0;padding-right:20px}
+body.ar .stat-num,body.ar .page-hero-num,body.ar .page-mini strong{font-family:Georgia,"Noto Sans Arabic",Tahoma,serif}
+body.ar .page{direction:rtl}
+body.ar .page h2{line-height:1.45;font-size:27px}body.ar .page p{line-height:1.75}body.ar .page-hero-label{letter-spacing:0}
+body.ar .visual-head,body.ar .page-header{letter-spacing:.015em}
+body.ar .page-bismillah{font-size:23px}
+@media(max-width:1170px){.main-layout{grid-template-columns:1fr}.details{max-width:none}.description{min-height:0}.stage{min-height:470px}.stat-grid{grid-template-columns:repeat(4,1fr)}.stat{min-height:125px}.source-inline{margin-top:0}}
+@media(max-width:740px){.app{padding:16px 12px 30px}.topbar{padding-bottom:17px}.brand-icon{width:34px;height:34px}.brand-icon svg{width:34px;height:34px}.brand-name{font-size:15px}.brand-sub{font-size:8px}.top-actions{gap:6px}.toggle{padding:9px 10px;min-width:auto;min-height:39px;font-size:11px;gap:6px}.hero{margin:26px 6px 14px}.hero-ornament{display:none}.hero-copy{font-size:13px}.visual-card,.details{border-radius:17px}.main-layout{gap:12px}.visual-head{padding:13px 14px 0;font-size:10px}.stage{min-height:300px}.visual-footer{padding:13px;gap:8px}.section-nav{margin-top:14px;margin-bottom:14px;gap:6px}.section-tab{padding:9px 12px;font-size:11px}.details{padding:20px}.stat-grid{grid-template-columns:1fr 1fr}.stat{min-height:112px}.stat-num{font-size:26px}.references ul{grid-template-columns:1fr}.stage-hint{font-size:10px;bottom:4px}.tiny-btn{font-size:10px;padding:7px 9px}}
+@media(max-width:400px){.brand-sub{display:none}.top-actions .toggle{padding:9px 8px;font-size:10px}.visual-footer .primary-btn{padding:10px 13px}.pager{gap:4px}.pager-count{min-width:42px}}
+@media(prefers-reduced-motion:reduce){html{scroll-behavior:auto}*,*:before,*:after{animation-duration:.01ms!important;transition-duration:.01ms!important}}
+
+/* Cinematic five-scene 3D gallery */
+.app{max-width:1640px;padding-inline:clamp(13px,3vw,46px)}
+.hero{margin:23px 0 22px;align-items:center}
+.hero h1{font-size:clamp(30px,3vw,47px);margin:10px 0 8px}
+.hero-copy{font-size:13px;max-width:850px}
+.main-layout{grid-template-columns:minmax(0,1fr);gap:14px}
+.visual-card{width:100%;border-radius:26px;isolation:isolate;box-shadow:0 30px 85px rgba(0,0,0,.2)}
+.visual-head{padding:17px 26px 0;z-index:20}
+.stage{min-height:clamp(590px,68vh,810px);overflow:hidden;isolation:isolate;touch-action:pan-y;
+ background:radial-gradient(ellipse at 50% 46%,rgba(27,108,102,.25),transparent 56%),linear-gradient(115deg,#0c292c,#061d24 56%,#08282d);
+ transition:background .7s ease}
+body.light .stage{background:radial-gradient(ellipse at 48% 47%,rgba(205,177,109,.20),transparent 55%),linear-gradient(115deg,#e8f0e9,#e1ebea 55%,#ecede3)}
+.stage[data-scene="1"]{background:radial-gradient(ellipse at 37% 43%,rgba(32,122,101,.3),transparent 52%),linear-gradient(130deg,#061d22,#0e3030 55%,#173c35)}
+.stage[data-scene="2"]{background:radial-gradient(ellipse at 65% 46%,rgba(198,150,68,.25),transparent 53%),linear-gradient(120deg,#18232b,#102c32 55%,#3a302d)}
+.stage[data-scene="3"]{background:radial-gradient(ellipse at 30% 50%,rgba(65,133,158,.28),transparent 54%),linear-gradient(120deg,#0d1e31,#102a36 55%,#07232e)}
+.stage[data-scene="4"]{background:radial-gradient(ellipse at 50% 45%,rgba(157,113,74,.21),transparent 56%),linear-gradient(125deg,#17232d,#101f2b 58%,#233329)}
+body.light .stage[data-scene="1"]{background:radial-gradient(ellipse at 37% 43%,rgba(57,145,120,.18),transparent 55%),linear-gradient(130deg,#e4f2e8,#dcebe4 55%,#deebdd)}
+body.light .stage[data-scene="2"]{background:radial-gradient(ellipse at 65% 46%,rgba(201,150,70,.21),transparent 57%),linear-gradient(120deg,#f2eadd,#e9efe9 55%,#f3e5d3)}
+body.light .stage[data-scene="3"]{background:radial-gradient(ellipse at 30% 50%,rgba(65,133,158,.18),transparent 53%),linear-gradient(120deg,#e6eff4,#e2edf0 55%,#ecf4f1)}
+body.light .stage[data-scene="4"]{background:radial-gradient(ellipse at 50% 45%,rgba(157,113,74,.19),transparent 56%),linear-gradient(125deg,#f6eddf,#eaecec 58%,#edf0dc)}
+.stage:before{content:"";width:min(74%,820px);height:34px;left:50%;bottom:40px;background:rgba(0,0,0,.2);filter:blur(22px)}
+.stage:after{content:"";position:absolute;inset:0;z-index:-1;opacity:.35;pointer-events:none;background-image:linear-gradient(rgba(171,190,173,.09) 1px,transparent 1px),linear-gradient(90deg,rgba(171,190,173,.09) 1px,transparent 1px);background-size:54px 54px;mask-image:linear-gradient(to bottom,transparent,black 28%,black 70%,transparent)}
+.scene-ambient{position:absolute;inset:0;pointer-events:none;overflow:hidden;z-index:0}
+.stage[data-scene="1"] .hud-card{border-radius:5px 19px 5px 19px;border-left:2px solid rgba(222,188,114,.56)}
+.stage[data-scene="2"] .hud-card{border-top:2px solid rgba(229,174,98,.59)}
+.stage[data-scene="3"] .hud-card{border-color:rgba(123,187,204,.4);background:linear-gradient(135deg,rgba(15,44,68,.84),rgba(16,57,69,.78))}
+.stage[data-scene="4"] .hud-card{border-radius:23px 7px 23px 7px}
+body.light .stage[data-scene="3"] .hud-card{background:linear-gradient(135deg,rgba(255,255,255,.94),rgba(229,242,248,.85));border-color:rgba(97,159,178,.36)}
+.scene-halo{position:absolute;width:610px;height:610px;border:1px solid rgba(221,193,137,.13);border-radius:50%;left:50%;top:49%;transform:translate(-50%,-50%);box-shadow:0 0 0 65px rgba(194,161,108,.023),0 0 0 135px rgba(182,144,90,.019),inset 0 0 78px rgba(237,191,120,.04);transition:left .8s,top .8s,transform .8s,opacity .6s}
+.scene-halo:before,.scene-halo:after{content:"";position:absolute;border-radius:50%;inset:48px;border:1px dashed rgba(235,204,148,.17)}
+.scene-halo:after{inset:99px;border-style:solid;opacity:.48}
+.scene-ornament{position:absolute;left:50%;top:46%;font-size:360px;line-height:1;transform:translate(-50%,-50%);opacity:.044;color:#eed6a2;transition:left .8s,top .8s}
+.stage[data-scene="1"] .scene-halo{left:34%;top:50%;transform:translate(-50%,-50%) rotate(-16deg) scale(.91)}
+.stage[data-scene="2"] .scene-halo{left:69%;top:50%;transform:translate(-50%,-50%) scale(.95)}
+.stage[data-scene="3"] .scene-halo{left:31%;top:52%;transform:translate(-50%,-50%) rotateY(65deg) scale(1.12);border-color:rgba(97,188,214,.35);box-shadow:0 0 0 70px rgba(75,135,165,.025),0 0 0 140px rgba(75,135,165,.02)}
+.stage[data-scene="4"] .scene-halo{transform:translate(-50%,-50%) rotate(-26deg) scale(.87)}
+.stage[data-scene="2"] .scene-ornament{left:69%;top:44%}
+.stage[data-scene="3"] .scene-ornament{left:30%;top:45%}
+.scene-heading{position:absolute;top:36px;left:5%;width:min(40%,480px);z-index:6;pointer-events:none;transition:opacity .3s,transform .5s}
+.scene-kicker{font-size:11px;letter-spacing:.24em;color:var(--gold);font-weight:800;margin-bottom:10px;text-transform:uppercase}
+.scene-heading h2{font:500 clamp(27px,3vw,45px)/1.13 Georgia,serif;color:var(--text);letter-spacing:-.025em;margin:0;max-width:465px;text-wrap:balance}
+.scene-caption{position:absolute;bottom:23px;left:50%;transform:translateX(-50%);font-size:11px;color:var(--muted);z-index:4;pointer-events:none;white-space:nowrap;letter-spacing:.055em}
+.book-holder{z-index:2;left:var(--book-left,50%);top:var(--book-top,51%);transform:translate(-50%,-50%) scale(var(--scale,1)) rotateZ(var(--book-z,0deg));transform-style:preserve-3d;transition:left .8s cubic-bezier(.2,.8,.2,1),top .8s cubic-bezier(.2,.8,.2,1),transform .8s cubic-bezier(.2,.8,.2,1);filter:drop-shadow(0 40px 38px rgba(0,0,0,.20))}
+.book-core{filter:drop-shadow(12px 26px 18px rgba(0,0,0,.28))}
+.book-holder .book-cover{will-change:transform}
+.stage-hint{display:none}
+.hud-layer{position:absolute;inset:0;z-index:5;pointer-events:none}
+.hud-card{position:absolute;width:clamp(158px,15.8vw,244px);background:linear-gradient(132deg,rgba(16,54,60,.88),rgba(15,43,51,.74));backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);border:1px solid rgba(216,187,128,.29);border-radius:17px;padding:16px 18px 15px;box-shadow:0 18px 42px rgba(0,0,0,.13),inset 0 1px 0 rgba(255,255,255,.04);transition:background .3s;direction:inherit}
+body.light .hud-card{background:linear-gradient(133deg,rgba(255,255,255,.93),rgba(244,245,235,.84));border-color:rgba(159,124,64,.29);box-shadow:0 15px 42px rgba(44,80,75,.09)}
+.hud-card:before{content:"";position:absolute;top:13px;right:13px;width:6px;height:6px;border-radius:50%;background:var(--gold);box-shadow:0 0 9px rgba(247,198,113,.7)}
+.hud-topline{font:700 9px/1.4 Inter,'Segoe UI',sans-serif;letter-spacing:.18em;color:var(--mint);text-transform:uppercase;margin-bottom:9px}
+.hud-value{font:500 clamp(30px,2.85vw,46px)/1.04 Georgia,serif;color:var(--gold);font-variant-numeric:tabular-nums;letter-spacing:-.04em;white-space:nowrap;direction:ltr;unicode-bidi:isolate;display:block}
+.hud-label{font-weight:700;color:var(--text);font-size:13px;line-height:1.4;margin-top:9px}
+.hud-meta{font-size:10px;color:var(--muted);line-height:1.5;margin-top:5px}
+.hud-card:after{content:"";position:absolute;top:50%;width:47px;height:1px;background:linear-gradient(90deg,rgba(228,195,130,.85),transparent)}
+.hud-card:nth-child(odd):after{left:100%}
+.hud-card:nth-child(even):after{right:100%;transform:rotate(180deg)}
+.stage[data-scene="0"] .hud-0{left:7%;top:30%}.stage[data-scene="0"] .hud-1{right:7%;top:28%}.stage[data-scene="0"] .hud-2{left:9%;bottom:17%}.stage[data-scene="0"] .hud-3{right:8%;bottom:16%}
+.stage[data-scene="1"] .hud-0{right:11%;top:24%;width:min(30%,360px)}.stage[data-scene="1"] .hud-1{right:8%;top:52%}.stage[data-scene="1"] .hud-2{right:29%;bottom:13%}.stage[data-scene="1"] .hud-3{left:8%;bottom:11%}
+.stage[data-scene="2"] .hud-0{left:7%;top:31%;width:min(29%,345px)}.stage[data-scene="2"] .hud-1{left:36%;top:31%}.stage[data-scene="2"] .hud-2{left:7%;bottom:13%}.stage[data-scene="2"] .hud-3{left:36%;bottom:13%}
+.stage[data-scene="3"] .hud-0{left:7%;top:28%;width:min(27%,355px)}.stage[data-scene="3"] .hud-1{left:8%;top:56%}.stage[data-scene="3"] .hud-2{left:33%;bottom:12%}.stage[data-scene="3"] .hud-3{left:33%;top:27%}
+.stage[data-scene="4"] .hud-0{left:8%;top:29%}.stage[data-scene="4"] .hud-1{right:9%;top:29%}.stage[data-scene="4"] .hud-2{left:12%;bottom:13%}.stage[data-scene="4"] .hud-3{right:11%;bottom:14%}
+.stage[data-scene="1"] .hud-0 .hud-value,.stage[data-scene="3"] .hud-0 .hud-value{font-size:clamp(36px,4vw,62px)}
+.stage.motion-exit-left .book-holder{animation:bookExitLeft .48s cubic-bezier(.46,.02,.9,.58) forwards}
+.stage.motion-exit-right .book-holder{animation:bookExitRight .48s cubic-bezier(.46,.02,.9,.58) forwards}
+.stage.motion-enter-left .book-holder{animation:bookEnterFromRight .82s cubic-bezier(.14,.8,.24,1) both}
+.stage.motion-enter-right .book-holder{animation:bookEnterFromLeft .82s cubic-bezier(.14,.8,.24,1) both}
+.stage.motion-exit-left .hud-layer,.stage.motion-exit-right .hud-layer,.stage.motion-exit-left .scene-heading,.stage.motion-exit-right .scene-heading{animation:hudExit .34s ease forwards}
+.stage.motion-enter-left .hud-card,.stage.motion-enter-right .hud-card{animation:hudEnter .68s cubic-bezier(.15,.75,.2,1) both;animation-delay:calc(.12s + var(--hud-i)*.1s)}
+.stage.motion-enter-left .scene-heading,.stage.motion-enter-right .scene-heading{animation:hudEnter .65s ease both}
+@keyframes bookExitLeft{0%{transform:translate(-50%,-50%) scale(var(--scale)) rotateZ(var(--book-z)) rotateY(0);opacity:1}100%{transform:translate(calc(-50% - 115vw),-50%) scale(calc(var(--scale)*.73)) rotateZ(-25deg) rotateY(-110deg);opacity:0}}
+@keyframes bookExitRight{0%{transform:translate(-50%,-50%) scale(var(--scale)) rotateZ(var(--book-z)) rotateY(0);opacity:1}100%{transform:translate(calc(-50% + 115vw),-50%) scale(calc(var(--scale)*.73)) rotateZ(25deg) rotateY(110deg);opacity:0}}
+@keyframes bookEnterFromRight{0%{transform:translate(calc(-50% + 115vw),-50%) scale(calc(var(--scale)*.75)) rotateZ(26deg) rotateY(110deg);opacity:0}100%{transform:translate(-50%,-50%) scale(var(--scale)) rotateZ(var(--book-z)) rotateY(0);opacity:1}}
+@keyframes bookEnterFromLeft{0%{transform:translate(calc(-50% - 115vw),-50%) scale(calc(var(--scale)*.75)) rotateZ(-26deg) rotateY(-110deg);opacity:0}100%{transform:translate(-50%,-50%) scale(var(--scale)) rotateZ(var(--book-z)) rotateY(0);opacity:1}}
+@keyframes hudExit{to{opacity:0;transform:translateY(-18px)}}
+@keyframes hudEnter{from{opacity:0;transform:translateY(23px) scale(.95)}to{opacity:1;transform:translateY(0) scale(1)}}
+.visual-footer{padding:16px 26px;position:relative;z-index:8}
+.pager-count{font-size:14px;min-width:70px}
+.scene-progress{display:flex;gap:8px;margin-inline:auto;align-items:center;justify-content:center}
+.scene-dot{width:30px;height:5px;border-radius:50px;background:var(--line);border:0;padding:0;transition:background .3s,width .3s}
+.scene-dot.active{width:62px;background:var(--gold)}
+.scene-dot:focus-visible{outline-offset:5px}
+.details{border-radius:20px;padding:20px 26px;display:grid;grid-template-columns:minmax(0,.95fr) minmax(0,1.05fr);column-gap:30px;align-items:center;box-shadow:none}
+.details .section-top{grid-column:1;grid-row:1}.details h2{grid-column:1;grid-row:2;margin:8px 0 6px;font-size:clamp(21px,2.2vw,31px)}
+.details .description{grid-column:1;grid-row:3;margin:0;min-height:0;line-height:1.65}
+.details .stat-grid{display:none}
+.details .note{grid-column:2;grid-row:2/4;margin:0;font-size:12px;line-height:1.7}
+.details .source-inline{grid-column:2;grid-row:1;justify-self:end;padding:0;margin:0}
+.visual-card:before{opacity:.35}
+body.ar .scene-heading h2{font-family:'Amiri','Noto Naskh Arabic',Tahoma,serif;letter-spacing:0;line-height:1.45;font-size:clamp(27px,3.1vw,43px)}
+body.ar .scene-kicker{letter-spacing:.03em}body.ar .hud-topline{letter-spacing:0}
+body.ar .hud-card:before{left:13px;right:auto}
+body.ar .scene-heading{left:auto;right:5%}
+body.ar .hud-card{direction:rtl}
+@media(max-width:1100px){
+ .stage{min-height:690px}
+ .scene-heading{top:23px;width:47%}
+ .stage[data-scene="0"] .hud-0{left:4%;top:31%}.stage[data-scene="0"] .hud-1{right:4%;top:30%}.stage[data-scene="0"] .hud-2{left:4%;bottom:16%}.stage[data-scene="0"] .hud-3{right:4%;bottom:16%}
+ .hud-card{width:clamp(153px,19vw,215px);padding:14px}
+}
+@media(max-width:750px){
+ .app{padding:13px 10px 26px}
+ .topbar{padding-bottom:13px}
+ .hero{margin:18px 5px 13px}
+ .hero h1{font-size:clamp(26px,6vw,37px);margin:6px 0}
+ .hero-copy{font-size:11px;line-height:1.45}
+ .visual-card{border-radius:20px}.visual-head{padding:12px 15px 0;font-size:9px}
+ .stage{min-height:clamp(625px,85svh,780px)}
+ .stage:before{bottom:215px;filter:blur(18px)}
+ .stage:after{background-size:35px 35px}
+ .scene-heading,body.ar .scene-heading{left:15px;right:15px;width:auto;top:18px;text-align:center}
+ .scene-kicker{font-size:9px;margin-bottom:5px}
+ .scene-heading h2,body.ar .scene-heading h2{font-size:clamp(25px,5.6vw,34px);line-height:1.2;margin:auto;max-width:95%}
+ .scene-halo{width:400px;height:400px;top:36%;opacity:.85}
+ .stage[data-scene="1"] .scene-halo,.stage[data-scene="2"] .scene-halo,.stage[data-scene="3"] .scene-halo{left:50%;top:36%;transform:translate(-50%,-50%) scale(.9)}
+ .scene-ornament{top:35%;font-size:245px}
+ .book-holder{left:var(--mobile-left,50%)!important;top:var(--mobile-top,35%)!important;--book-z:var(--mobile-z,0deg)!important}
+ .stage[data-scene="1"] .book-holder{--mobile-left:45%;--mobile-top:36%}
+ .stage[data-scene="2"] .book-holder{--mobile-left:54%;--mobile-top:35%}
+ .stage[data-scene="3"] .book-holder{--mobile-left:46%;--mobile-top:34%}
+ .stage[data-scene="4"] .book-holder{--mobile-left:53%;--mobile-top:36%}
+ .hud-layer{position:absolute;display:grid;grid-template-columns:1fr 1fr;gap:9px;left:12px;right:12px;top:auto;bottom:48px;height:auto;inset-block-start:auto;inset-block-end:48px;inset-inline:12px;align-items:stretch}
+ .hud-card,.stage[data-scene="0"] .hud-card,.stage[data-scene="1"] .hud-card,.stage[data-scene="2"] .hud-card,.stage[data-scene="3"] .hud-card,.stage[data-scene="4"] .hud-card{position:relative;top:auto;bottom:auto;left:auto;right:auto;width:auto;min-width:0;padding:11px 12px 12px;border-radius:13px;box-shadow:none}
+ .hud-card:after{display:none}
+ .hud-topline{font-size:8px;letter-spacing:.09em;margin-bottom:4px}
+ .hud-value,.stage[data-scene="1"] .hud-0 .hud-value,.stage[data-scene="3"] .hud-0 .hud-value{font-size:clamp(26px,6.5vw,38px)}
+ .hud-label{font-size:11px;line-height:1.22;margin-top:6px}
+ .hud-meta{font-size:9px;margin-top:3px;line-height:1.35}
+ .scene-caption{bottom:15px;font-size:10px;letter-spacing:0}
+ .visual-footer{padding:13px 15px;gap:9px}
+ .scene-progress{order:3;flex-basis:100%;margin:5px auto 0}
+ .details{display:flex;flex-direction:column;align-items:stretch;padding:17px 19px;gap:8px}
+ .details .section-top{order:0}.details h2{order:1;margin:0}.details .description{order:2;font-size:12px}.details .note{order:3;margin-top:5px}.details .source-inline{order:4;margin-top:3px}
+ .section-nav{flex-wrap:nowrap;overflow:auto;scrollbar-width:none;padding-bottom:3px;margin-top:13px;margin-bottom:8px}
+ .section-nav::-webkit-scrollbar{display:none}.section-tab{white-space:nowrap;flex:none}
+ .data-notice{padding:12px 14px}.data-notice p{font-size:11px}
+}
+@media(max-width:390px){.hud-layer{gap:7px;left:9px;right:9px}.hud-card{padding:9px!important}.hud-value{font-size:25px!important}.hud-label{font-size:10px}.scene-dot{width:23px}.scene-dot.active{width:45px}}
+@media(prefers-reduced-motion:reduce){.stage.motion-exit-left .book-holder,.stage.motion-exit-right .book-holder,.stage.motion-enter-left .book-holder,.stage.motion-enter-right .book-holder,.stage.motion-exit-left .hud-layer,.stage.motion-exit-right .hud-layer,.stage.motion-exit-left .scene-heading,.stage.motion-exit-right .scene-heading,.stage.motion-enter-left .hud-card,.stage.motion-enter-right .hud-card,.stage.motion-enter-left .scene-heading,.stage.motion-enter-right .scene-heading{animation:none!important}}
+
+</style>
+</head>
+<body>
+<div class="app" id="app">
+  <header class="topbar">
+    <div class="brand">
+      <div class="brand-icon" aria-hidden="true"><svg viewBox="0 0 48 48" fill="none"><path d="M24 3 29.5 13 40 8l-5 10 10 6-10 6 5 10-10.5-5L24 45l-5.5-10L8 40l5-10-10-6 10-6-5-10 10.5 5L24 3Z" stroke="currentColor" stroke-width="1.4"/><circle cx="24" cy="24" r="11" stroke="currentColor" stroke-width="1.2"/><path d="m24 15 2.5 6.5L33 24l-6.5 2.5L24 33l-2.5-6.5L15 24l6.5-2.5L24 15Z" fill="currentColor"/></svg></div>
+      <div><div class="brand-name" id="brandName">THE NOBLE QUR'AN</div><div class="brand-sub" id="brandSub">INTERACTIVE KNOWLEDGE EXPLORER</div></div>
+    </div>
+    <div class="top-actions">
+      <button class="toggle" type="button" id="langToggle" aria-label="Switch to Arabic"><span aria-hidden="true">🌐</span><span id="langText">العربية</span></button>
+      <button class="toggle" type="button" id="themeToggle" role="switch" aria-checked="false" aria-label="Switch to light mode"><svg id="themeIcon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"><circle cx="12" cy="12" r="4"/><path d="M12 2v2m0 16v2M4.93 4.93l1.41 1.41m11.32 11.32 1.41 1.41M2 12h2m16 0h2M4.93 19.07l1.41-1.41M17.66 6.34l1.41-1.41"/></svg><span id="themeText">Light</span></button>
+    </div>
+  </header>
+  <section class="hero" aria-labelledby="heroTitle"><div><div class="eyebrow" id="eyebrow">A JOURNEY THROUGH THE NUMBERS</div><h1 id="heroTitle">Open a book. Discover a world.</h1><p class="hero-copy" id="heroDesc">Explore the Qur'an through an interactive three-dimensional book, clear facts, and carefully sourced numbers. Open the cover and turn its pages to begin.</p></div><div class="hero-ornament" aria-hidden="true">۞</div></section>
+  <main>
+  <div class="main-layout">
+    <section class="visual-card" aria-label="Interactive three-dimensional Qur'an book" id="visualCard">
+      <div class="visual-head"><div class="live-label"><span class="status-dot"></span><span id="visualLabel">INTERACTIVE 3D BOOK</span></div><button class="tiny-btn" id="resetView" type="button"><span aria-hidden="true">↺</span><span id="resetText">Reset angle</span></button></div>
+      <div class="stage" id="stage" data-scene="0" aria-label="Five interactive scenes featuring the three-dimensional Qur'an">
+        <div class="scene-ambient" aria-hidden="true"><div class="scene-halo"></div><div class="scene-ornament">۞</div></div>
+        <div class="scene-heading" id="sceneHeading" aria-live="polite"><div class="scene-kicker" id="sceneKicker">01 · FOUNDATIONS</div><h2 id="sceneTitle">The Qur’an at a glance</h2></div>
+        <div class="hud-layer" id="hudLayer" aria-label="Floating facts around the Qur’an"></div>
+        <div class="book-holder" id="bookHolder">
+          <div class="book-core" id="bookCore">
+            <div class="book-base"></div><div class="closed-leaves"></div>
+            <div class="book-spread" id="bookSpread">
+              <section class="page page-left"><div class="page-header"><span id="pageLeftOverline">EXPLORE THE QUR'AN</span><span class="page-mark">✦</span></div><h2 id="pageLeftTitle">A remarkable structure</h2><p id="pageLeftDesc">114 chapters of varying lengths, divided for reading and reflection.</p><div class="page-divider"></div><div class="page-small-grid" id="pageMiniGrid"></div><div class="page-bottom">✧ ۞ ✧</div></section>
+              <section class="page page-right"><div class="page-header"><span class="page-mark">✦</span><span id="pageRightOverline">DISCOVER THE NUMBERS</span></div><div class="page-bismillah" lang="ar" dir="rtl">بِسْمِ اللَّهِ الرَّحْمَٰنِ الرَّحِيمِ</div><div class="page-divider"></div><div class="page-hero-num" id="pageHeroNum">114</div><div class="page-hero-label" id="pageHeroLabel">CHAPTERS (SURAHS)</div><p class="page-hero-note" id="pageHeroNote">Every surah has a name and its own number of verses.</p><div class="page-footnote">✦ &nbsp; ✦ &nbsp; ✦</div></section>
+            </div>
+            <div class="turn-sheet" id="turnSheet" aria-hidden="true"><div class="turn-front">۞</div><div class="turn-back">✦</div></div>
+            <div class="book-cover" id="bookCover" role="button" tabindex="0" aria-label="Open the Holy Qur'an book">
+              <div class="cover-front"><div class="cover-pattern" aria-hidden="true"></div><div class="cover-content"><div class="cover-crest" aria-hidden="true">۞</div><div class="cover-arabic" lang="ar" dir="rtl">الْقُرْآنُ الْكَرِيمُ</div><div class="cover-en">THE NOBLE QUR'AN</div><div class="cover-small" aria-hidden="true">✦ &nbsp; ✦ &nbsp; ✦</div></div></div>
+              <div class="cover-inside"><div class="cover-inside-symbol" aria-hidden="true">۞</div></div>
+            </div>
+          </div>
+        </div>
+        <div class="scene-caption" id="sceneCaption">Drag to rotate · Use the arrows to explore five scenes</div>
+        <div class="stage-hint" id="stageHint">Tap the cover to open · Drag to rotate</div>
+      </div>
+      <div class="visual-footer"><div class="pager"><button id="prevBtn" class="nav-btn" type="button" aria-label="Previous page" disabled><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m15 18-6-6 6-6"/></svg></button><span class="pager-count" id="pageCount">01 / 05</span><button id="nextBtn" class="nav-btn" type="button" aria-label="Next page"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m9 18 6-6-6-6"/></svg></button></div><div class="scene-progress" id="sceneProgress" aria-label="Scene navigation"></div><button class="primary-btn" id="openBtn" type="button"><span id="openBtnText">Open the Qur'an</span><span aria-hidden="true" id="openArrow">↗</span></button></div>
+    </section>
+    <aside class="details" aria-labelledby="sectionTitle">
+      <div class="section-top"><span id="sectionKicker">PAGE 01 · FOUNDATIONS</span><span class="section-badge" id="sectionBadge">Verified facts</span></div>
+      <h2 id="sectionTitle">The Qur'an at a glance</h2><p class="description" id="sectionDesc">The sacred scripture of Islam, understood by Muslims as revelation received by the Prophet Muhammad ﷺ.</p>
+      <div class="stat-grid" id="statGrid"></div>
+      <div class="note" id="sectionNote">The 6,236 verse count follows the common Kufan numbering tradition; other verse divisions differ slightly.</div>
+      <div class="source-inline"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><path d="M4 5.5A2.5 2.5 0 0 1 6.5 3H20v17H6.5A2.5 2.5 0 0 1 4 17.5Zm0 12A2.5 2.5 0 0 1 6.5 15H20"/></svg><span id="sourceNudge">Sources and counting notes are listed below.</span></div>
+    </aside>
+  </div>
+  <nav class="section-nav" id="sectionTabs" aria-label="Explore topics"></nav>
+  <div class="data-notice"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><circle cx="12" cy="12" r="10"/><path d="M12 11v6m0-10h.01"/></svg><p id="dataNotice"><strong>About the counters:</strong> These numbers animate for learning; they do not measure live activity. The worldwide Muslim population is not a count of people currently reading the Qur'an. No reliable worldwide total of Qur'an copies printed annually was found, so publishing data are attributed to a named printing complex.</p></div>
+  <details class="references" id="references"><summary id="referencesTitle">Sources, methods &amp; important distinctions <span aria-hidden="true">＋</span></summary><p id="referencesIntro">Figures use the specific counting conventions and reporting dates shown below. The 3D object is an illustrative model rather than a reproduction of a printed mushaf.</p><ul id="referencesList"></ul></details>
+  </main><footer class="footer"><span id="footerText">If you have any comments or suggestions, please contact me at</span> <a href="mailto:adiy85@gmail.com" dir="ltr">adiy85@gmail.com</a></footer>
+</div>
+<script>
+(()=>{'use strict';
+const $=id=>document.getElementById(id);
+const refs=[
+ {en:'Quran Foundation: 114 chapters, 6,236 verses, 30 juz, 60 hizb',ar:'مؤسسة القرآن: ١١٤ سورة، و٦٬٢٣٦ آية، و٣٠ جزءًا، و٦٠ حزبًا',url:'https://api-docs.quran.com/docs/content_apis_versioned/4.0.0/resources-snapshot/'},
+ {en:'Quranic Arabic Corpus: 77,429 orthographic words (version 0.4)',ar:'المدونة العربية القرآنية: ٧٧٬٤٢٩ كلمة وفق منهجية المدونة',url:'https://corpus.quran.com/releasenotes.jsp'},
+ {en:'Quran.com: Chapter list, Al-Baqarah (286 verses) and Al-Kawthar (3 verses)',ar:'موقع قرآن دوت كوم: فهرس السور؛ البقرة (٢٨٦ آية) والكوثر (٣ آيات)',url:'https://quran.com/surahs'},
+ {en:'Quran Foundation: 604 pages in the common Madinah mushaf layout',ar:'مؤسسة القرآن: ٦٠٤ صفحات في مصحف المدينة المنورة الشائع',url:'https://api-docs.quran.com/docs/tutorials/fonts/page-layout/'},
+ {en:'Pew Research Center (June 2025): about 2.0 billion Muslims in 2020',ar:'مركز بيو للأبحاث (حزيران ٢٠٢٥): نحو ملياري مسلم في عام ٢٠٢٠',url:'https://www.pewresearch.org/religion/2025/06/09/muslim-population-change/'},
+ {en:'Saudi Press Agency (Aug 2025): King Fahd Complex annual output reported over 20 million copies and translations into 75+ languages',ar:'وكالة الأنباء السعودية (آب ٢٠٢٥): إنتاج يتجاوز ٢٠ مليون نسخة سنويًا للمجمع وترجمات لأكثر من ٧٥ لغة',url:'https://www.spa.gov.sa/en/N2380026'},
+ {en:'Saudi Press Agency (Mar 2022): more than 345 million publications produced since the complex was established',ar:'وكالة الأنباء السعودية (آذار ٢٠٢٢): أكثر من ٣٤٥ مليون إصدار منذ إنشاء المجمع',url:'https://www.spa.gov.sa/w1704454'},
+ {en:'Quran.com: Surah Al-Fatihah and its seven verses',ar:'موقع قرآن دوت كوم: سورة الفاتحة وآياتها السبع',url:'https://quran.com/al-fatihah'},
+ {en:'Traditional chronology and early compilation: contextual overview',ar:'التسلسل الزمني المتعارف عليه وجمع المصحف في صدر الإسلام',url:'https://www.britannica.com/topic/Quran'}
+];
+const DATA={
+ en:{brand:'THE NOBLE QUR\'AN',sub:'INTERACTIVE KNOWLEDGE EXPLORER',eyebrow:'A JOURNEY THROUGH THE NUMBERS',hero:'Five scenes. One extraordinary book.',intro:'Travel through five cinematic scenes. Watch the entire Qur’an model move, rotate and reappear with new facts in every chapter of the experience.',lang:'العربية',themeLight:'Light',themeDark:'Dark',visual:'3D QUR’AN · SCENE EXPLORER',reset:'Reset angle',hintClosed:'Tap the cover to open · Drag to rotate',hintOpen:'Drag to rotate · Change scenes with the arrows or tabs',open:'Open the Qur’an',close:'Close the book',verified:'Sourced figures',sources:'Sources and counting notes are listed below.',page:'PAGE',overlineLeft:'EXPLORE THE QUR’AN',overlineRight:'DISCOVER THE NUMBERS',counterNotice:'<strong>About the counters:</strong> These figures animate for learning; they are not live measurements. The Muslim population is <strong>not</strong> a count of people currently reading the Qur’an. There is no sufficiently reliable worldwide annual printing total, so production figures are attributed to one named printing complex.',refTitle:'Sources, methods & important distinctions',refIntro:'Figures reflect the stated counting conventions and reporting dates. The 3D book is an illustrative learning model—not a reproduction of a printed mushaf. Word and verse totals can vary by counting method.',footer:'If you have any comments or suggestions, please contact me at',tabs:['At a glance','Words & structure','Revelation','Around the world','Explore more'],
+ sections:[
+  {kicker:'FOUNDATIONS',title:'The Qur’an at a glance',desc:'The sacred scripture of Islam, understood by Muslims as revelation received by the Prophet Muhammad ﷺ.',leftTitle:'A remarkable structure',leftDesc:'The Qur’an contains chapters of different lengths and is also divided into sections that support regular reading.',hero:114,heroLabel:'chapters · surahs',heroNote:'The surahs begin with Al-Fatihah and end with An-Nas.',stats:[['surahs',114,'Chapters (surahs)','A complete set'],['verses',6236,'Verses (ayahs)','Common Kufan count'],['parts',30,'Parts (juz)','Reading divisions'],['pages',604,'Pages','Common Madinah edition']],note:'The 6,236 verse count follows the common Kufan numbering tradition; the number can differ slightly in other traditions. 604 pages describes a particular printed layout, not all editions.'},
+  {kicker:'WORDS & STRUCTURE',title:'Every word, every chapter',desc:'The structure is rich: short chapters sit beside much longer ones, and word totals depend on the way the Arabic text is counted.',leftTitle:'A living architecture of words',leftDesc:'From the longest surah to short, memorable chapters, each section forms part of the same scripture.',hero:77429,heroLabel:'Arabic words · corpus count',heroNote:'Orthographic word count reported by the Quranic Arabic Corpus; alternative methods may differ.',stats:[['words',77429,'Arabic words','Corpus tokenization'],['hizb',60,'Hizb subdivisions','Two per juz'],['long',286,'Verses in Al-Baqarah','Longest surah'],['short',3,'Verses in Al-Kawthar','Among the 3-verse surahs']],note:'“77,429 words” uses the Quranic Arabic Corpus approach; it is not a count of unique words. Al-Kawthar, Al-Asr, and An-Nasr all have three verses.'},
+  {kicker:'REVELATION',title:'Revelation through time',desc:'According to Islamic tradition, the Qur’an was revealed gradually to the Prophet Muhammad ﷺ over approximately twenty-three years.',leftTitle:'A story across years',leftDesc:'The traditional chronology places the first revelations in Makkah around 610 CE and the final period in 632 CE.',hero:23,heroLabel:'years · approximately',heroNote:'A traditional date range associated with the period of revelation.',stats:[['years',23,'Years of revelation','Approximately'],['start',610,'CE · beginning','Traditional dating'],['finish',632,'CE · final period','Traditional dating'],['fatihah',7,'Verses in Al-Fatihah','Opening chapter']],note:'Early Muslims memorized and wrote down passages. Traditional Muslim accounts describe collection under Abu Bakr and the dissemination of standard copies under Uthman; historical scholarship discusses aspects of this process.'},
+  {kicker:'GLOBAL REACH',title:'A book read across the world',desc:'The Qur’an is studied, recited, memorized, translated, and printed worldwide. The figures below describe different things and must not be confused.',leftTitle:'A worldwide presence',leftDesc:'A global faith community and a major printing tradition show the Qur’an’s reach—but they are not measures of live readership.',hero:2000000000,heroLabel:'Muslims worldwide · 2020 estimate',heroNote:'A population estimate, not the number of active Qur’an readers.',stats:[['muslims',2000000000,'Muslims worldwide','Pew, estimated for 2020'],['annual',20000000,'Copies per year','King Fahd Complex, reported 2025; >'],['cumulative',345000000,'Editions & copies','King Fahd Complex, > by 2022'],['languages',75,'Translation languages','King Fahd Complex, > in 2025']],note:'No verified worldwide annual total of printed Qur’ans is available here. The printing counts come from ONE institution in Madinah and may include translations and other editions; they must not be presented as global totals.'},
+  {kicker:'KEEP EXPLORING',title:'A meaningful place to begin',desc:'From the opening chapter to the final short surahs, the Qur’an can be explored by chapter, verse, meaning, and recitation.',leftTitle:'A path for curious minds',leftDesc:'The first surah is Al-Fatihah; the longest is Al-Baqarah; the final chapter is An-Nas.',hero:7,heroLabel:'verses · Al-Fatihah',heroNote:'Al-Fatihah, “The Opening,” is the first surah of the Qur’an.',stats:[['first',1,'Al-Fatihah','First chapter'],['last',114,'An-Nas','Final chapter'],['longest',286,'Al-Baqarah','Longest chapter'],['juz',30,'Juz divisions','For structured reading']],note:'Use the reference links below to read the Arabic text, listen to recitations, and compare translations. This interactive model presents facts—not the complete scriptural text.'}
+ ]},
+ ar:{brand:'القرآن الكريم',sub:'مستكشف معرفي تفاعلي',eyebrow:'رحلة معرفية في أرقام القرآن',hero:'خمسة مشاهد تروي عالماً من المعرفة.',intro:'رحلة عبر خمسة مشاهد ثلاثية الأبعاد؛ ينتقل المصحف كاملاً ويظهر بزوايا مختلفة، مع مؤشرات تفاعلية وأرقام جديدة في كل مشهد.',lang:'English',themeLight:'فاتح',themeDark:'داكن',visual:'مشاهد ثلاثية الأبعاد للمصحف الشريف',reset:'إعادة زاوية العرض',hintClosed:'المس الغلاف لفتحه · اسحب لتدوير المصحف',hintOpen:'اسحب للتدوير · تنقّل بالأسهم أو علامات الأقسام',open:'افتح المصحف',close:'أغلق المصحف',verified:'بيانات موثّقة',sources:'المصادر وملاحظات العدّ مذكورة في أسفل الصفحة.',page:'الصفحة',overlineLeft:'استكشف القرآن الكريم',overlineRight:'حقائق وأرقام',counterNotice:'<strong>ملاحظة بشأن العدّادات:</strong> تتحرك الأرقام للتوضيح فقط، وليست قياسات لحظية. عدد المسلمين حول العالم <strong>لا يمثّل</strong> عدد الأشخاص الذين يقرؤون القرآن الآن. ولا يتوفر هنا إحصاء عالمي موثوق للإنتاج السنوي للمصاحف؛ لذلك نُسبت أرقام الطباعة إلى مجمع محدد.',refTitle:'المصادر والمنهجية وتوضيحات مهمة',refIntro:'تتعلق الأرقام بطرق العدّ وتواريخ نشر البيانات الموضحة. النموذج ثلاثي الأبعاد وسيلة تعليمية توضيحية، وليس نسخة مصوّرة من المصحف المطبوع. قد تختلف أعداد الآيات والكلمات باختلاف منهجية العدّ.',footer:'إذا كانت لديكم أي ملاحظات أو اقتراحات، يُرجى التواصل معي عبر البريد الإلكتروني:',tabs:['نظرة عامة','الكلمات والبنية','نزول القرآن','الانتشار العالمي','للمزيد من المعرفة'],
+ sections:[
+  {kicker:'معلومات أساسية',title:'القرآن الكريم في أرقام',desc:'القرآن الكريم كتاب الإسلام المقدس، ويؤمن المسلمون بأنه وحي أُنزل على النبي محمد ﷺ.',leftTitle:'بناء قرآني فريد',leftDesc:'يضم القرآن سورًا متفاوتة الطول، ويُقسّم أيضًا إلى أجزاء تُعين على التلاوة والمراجعة.',hero:114,heroLabel:'سورة في القرآن الكريم',heroNote:'تبدأ سور القرآن بالفاتحة وتُختتم بسورة الناس.',stats:[['surahs',114,'عدد السور','جميع سور القرآن'],['verses',6236,'عدد الآيات','بحسب العدّ الكوفي'],['parts',30,'عدد الأجزاء','أقسام للتلاوة'],['pages',604,'عدد الصفحات','مصحف المدينة الشائع']],note:'عدد ٦٬٢٣٦ آية يتبع طريقة العدّ الكوفي الشائعة؛ وتوجد فروق طفيفة بين مدارس عدّ الآيات. أما ٦٠٤ صفحات فتخصّ طبعة معروفة ولا تنطبق على جميع المصاحف.'},
+  {kicker:'الكلمات والبنية',title:'الكلمات والسور',desc:'تتفاوت أطوال السور، كما تتفاوت أعداد الكلمات المحصاة تبعًا لطريقة تقسيم النص العربي وتحليله.',leftTitle:'بنية غنية بالكلمات',leftDesc:'من سورة البقرة الطويلة إلى السور القصيرة، يجمع المصحف بين وحدات قرآنية متنوعة.',hero:77429,heroLabel:'كلمة عربية وفق المدونة',heroNote:'عدد الكلمات بحسب المدونة العربية القرآنية، وقد يختلف عن طرق الإحصاء الأخرى.',stats:[['words',77429,'كلمات القرآن','بحسب المدونة'],['hizb',60,'عدد الأحزاب','حزبان في كل جزء'],['long',286,'آيات سورة البقرة','أطول سورة'],['short',3,'آيات سورة الكوثر','إحدى السور ذات ٣ آيات']],note:'العدد ٧٧٬٤٢٩ يحصي الكلمات وفق منهج المدونة العربية القرآنية، ولا يعني عدد الكلمات الفريدة. وتشترك الكوثر والعصر والنصر في كون كل منها ثلاث آيات.'},
+  {kicker:'نزول القرآن',title:'نزول القرآن عبر الزمن',desc:'بحسب الرواية الإسلامية، نزل القرآن الكريم على النبي محمد ﷺ منجّمًا خلال نحو ثلاثة وعشرين عامًا.',leftTitle:'رحلة عبر السنوات',leftDesc:'يرتبط بدء الوحي، وفق التسلسل التقليدي، بمكة المكرمة قرابة سنة ٦١٠م، وتمتد الفترة إلى سنة ٦٣٢م.',hero:23,heroLabel:'سنة تقريبًا لنزول الوحي',heroNote:'مدة تقريبية بحسب التسلسل الزمني المتعارف عليه لنزول القرآن.',stats:[['years',23,'سنوات نزول الوحي','تقريبًا'],['start',610,'م · بداية النزول','التاريخ المتعارف عليه'],['finish',632,'م · الفترة الأخيرة','التاريخ المتعارف عليه'],['fatihah',7,'آيات سورة الفاتحة','أول سورة في المصحف']],note:'حُفظ القرآن في الصدور وكُتب في زمن النبوة. وتذكر الرواية الإسلامية جمعه في عهد أبي بكر ونسخ المصاحف في عهد عثمان؛ وتناقش الدراسات التاريخية جوانب من هذه المرحلة.'},
+  {kicker:'الانتشار العالمي',title:'القرآن الكريم حول العالم',desc:'يُتلى القرآن ويُحفظ ويُدرس ويُترجم ويُطبع في مختلف أنحاء العالم. ويجب التفريق بين هذه المؤشرات.',leftTitle:'حضور عالمي واسع',leftDesc:'تعكس أعداد المسلمين ومطبوعات أحد المجمعات الكبرى مدى الانتشار، لكنها لا تقيس عدد القرّاء الحاليين.',hero:2000000000,heroLabel:'مسلم حول العالم · تقدير ٢٠٢٠',heroNote:'تقدير سكاني وليس إحصاءً لقرّاء القرآن الفعليين.',stats:[['muslims',2000000000,'عدد المسلمين عالميًا','تقدير بيو لعام ٢٠٢٠'],['annual',20000000,'نسخة سنويًا','إنتاج مجمع الملك فهد، أكثر من · ٢٠٢٥'],['cumulative',345000000,'إصدار ونسخة','إجمالي مجمع الملك فهد، أكثر من · ٢٠٢٢'],['languages',75,'لغة للترجمات','مجمع الملك فهد، أكثر من · ٢٠٢٥']],note:'لا يتوفر هنا إجمالي سنوي عالمي موثّق للمصاحف المطبوعة. جميع أرقام الطباعة تخص مجمعًا واحدًا في المدينة المنورة، وقد تشمل ترجمات وإصدارات أخرى؛ وليست مجموع الإنتاج العالمي.'},
+  {kicker:'للمزيد من المعرفة',title:'من أين تبدأ رحلتك؟',desc:'يمكن استكشاف القرآن الكريم بحسب السور والآيات والمعاني والتلاوات، بدءًا من الفاتحة إلى السور الأخيرة.',leftTitle:'خطوات لاكتشاف القرآن',leftDesc:'تبدأ سور المصحف بالفاتحة؛ وأطولها البقرة؛ وآخرها الناس.',hero:7,heroLabel:'آيات سورة الفاتحة',heroNote:'الفاتحة هي السورة الأولى في ترتيب المصحف الشريف.',stats:[['first',1,'سورة الفاتحة','أول سورة'],['last',114,'سورة الناس','آخر سورة'],['longest',286,'سورة البقرة','أطول السور'],['juz',30,'أجزاء القرآن','لتنظيم القراءة']],note:'يمكن الاستفادة من روابط المصادر للاطلاع على النص العربي والاستماع إلى التلاوات ومقارنة الترجمات. ويعرض هذا النموذج معلومات تعليمية، وليس النص القرآني كاملًا.'}
+ ]}
+};
+let lang='en',dark=true,opened=false,index=0,animating=false,rx=5,ry=-7,drag=null,suppressClick=false;
+const SCENES=[{left:'50%',top:'52%',z:'-2deg',mobileZ:'-4deg',rx:7,ry:-12},{left:'36%',top:'51%',z:'-10deg',mobileZ:'-12deg',rx:15,ry:-26},{left:'70%',top:'49%',z:'9deg',mobileZ:'9deg',rx:9,ry:26},{left:'71%',top:'49%',z:'-8deg',mobileZ:'-9deg',rx:14,ry:-31},{left:'50%',top:'50%',z:'5deg',mobileZ:'5deg',rx:3,ry:15}];
+const compact=(n)=>{const f=new Intl.NumberFormat(lang==='ar'?'ar-JO':'en-US',{maximumFractionDigits:0});if(n>=1e9)return lang==='ar'?f.format(n/1e9)+' مليار':(n/1e9).toFixed(1)+'B';if(n>=1e6)return lang==='ar'?f.format(n/1e6)+' مليون':f.format(n/1e6)+'M';return f.format(n)};
+const full=(n)=>new Intl.NumberFormat(lang==='ar'?'ar-JO':'en-US',{maximumFractionDigits:0}).format(Math.round(n));
+const reducedMotion=()=>window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+function animateNum(el,value,useCompact=false){if(!el)return;const format=useCompact?compact:full;el.textContent=format(value);if(reducedMotion()||document.hidden)return;let started=null;const duration=value>=1e6?1150:720;function tick(time){if(!el.isConnected)return;if(started===null)started=time;let t=Math.min(1,(time-started)/duration);const eased=1-Math.pow(1-t,3);el.textContent=format(Math.round(value*eased));if(t<1)requestAnimationFrame(tick);else el.textContent=format(value)}el.textContent=format(0);requestAnimationFrame(tick)}
+function applyLanguage(){const t=DATA[lang];document.documentElement.lang=lang;document.documentElement.dir=lang==='ar'?'rtl':'ltr';document.body.classList.toggle('ar',lang==='ar');$('brandName').textContent=t.brand;$('brandSub').textContent=t.sub;$('eyebrow').textContent=t.eyebrow;$('heroTitle').textContent=t.hero;$('heroDesc').textContent=t.intro;$('langText').textContent=t.lang;$('visualLabel').textContent=t.visual;$('resetText').textContent=t.reset;$('sectionBadge').textContent=t.verified;$('sourceNudge').textContent=t.sources;$('dataNotice').innerHTML=t.counterNotice;$('referencesTitle').innerHTML=t.refTitle+' <span aria-hidden="true">＋</span>';$('referencesIntro').textContent=t.refIntro;$('footerText').textContent=t.footer;$('pageLeftOverline').textContent=t.overlineLeft;$('pageRightOverline').textContent=t.overlineRight;$('langToggle').setAttribute('aria-label',lang==='en'?'Switch to Arabic':'Switch to English');$('bookCover').setAttribute('aria-label',lang==='en'?'Open the Holy Qur’an book':'افتح المصحف الشريف');$('stageHint').textContent=opened?t.hintOpen:t.hintClosed;$('openBtnText').textContent=opened?t.close:t.open;$('prevBtn').setAttribute('aria-label',lang==='en'?'Previous page':'الصفحة السابقة');$('nextBtn').setAttribute('aria-label',lang==='en'?'Next page':'الصفحة التالية');$('resetView').setAttribute('aria-label',t.reset);document.title=lang==='en'?'The Noble Qur’an — 3D Knowledge Explorer':'القرآن الكريم — مستكشف تفاعلي ثلاثي الأبعاد';$('referencesList').innerHTML='';refs.forEach(ref=>{let li=document.createElement('li');let a=document.createElement('a');a.href=ref.url;a.target='_blank';a.rel='noopener noreferrer';a.textContent=ref[lang];li.append(a);$('referencesList').append(li)});$('sectionTabs').innerHTML='';t.tabs.forEach((name,i)=>{let b=document.createElement('button');b.type='button';b.className='section-tab';b.textContent=name;b.dataset.index=i;b.addEventListener('click',()=>goTo(i));$('sectionTabs').append(b)});applyTheme();render()}
+function applyTheme(){document.body.classList.toggle('light',!dark);$('themeToggle').setAttribute('aria-checked',String(!dark));$('themeToggle').setAttribute('aria-label',dark?(lang==='en'?'Switch to light mode':'التبديل إلى الوضع الفاتح'):(lang==='en'?'Switch to dark mode':'التبديل إلى الوضع الداكن'));$('themeText').textContent=dark?DATA[lang].themeLight:DATA[lang].themeDark;$('themeIcon').innerHTML=dark?'<circle cx="12" cy="12" r="4"/><path d="M12 2v2m0 16v2M4.93 4.93l1.41 1.41m11.32 11.32 1.41 1.41M2 12h2m16 0h2M4.93 19.07l1.41-1.41M17.66 6.34l1.41-1.41"/>':'<path d="M20.8 14.1A9 9 0 0 1 9.9 3.2a9 9 0 1 0 10.9 10.9Z"/>'}
+function render(){const t=DATA[lang],s=t.sections[index];$('sectionKicker').textContent=`${t.page} ${full(index+1).padStart(2,'0')} · ${s.kicker}`;$('sectionTitle').textContent=s.title;$('sectionDesc').textContent=s.desc;$('sectionNote').textContent=s.note;$('pageLeftTitle').textContent=s.leftTitle;$('pageLeftDesc').textContent=s.leftDesc;$('pageHeroLabel').textContent=s.heroLabel;$('pageHeroNote').textContent=s.heroNote;$('pageCount').textContent=String(index+1).padStart(2,'0')+' / '+String(t.sections.length).padStart(2,'0');const grid=$('statGrid');grid.innerHTML='';s.stats.forEach((st,i)=>{let box=document.createElement('div');box.className='stat';box.title=st[2]+' · '+st[3];let num=document.createElement('div');num.className='stat-num';num.textContent=compact(st[1]);let label=document.createElement('div');label.className='stat-label';label.textContent=st[2];let meta=document.createElement('div');meta.className='stat-meta';meta.textContent=st[3];box.append(num,label,meta);grid.append(box);setTimeout(()=>{if(box.isConnected)animateNum(num,st[1],true)},i*90)});
+ $('pageMiniGrid').innerHTML='';s.stats.slice(1,3).forEach(st=>{let div=document.createElement('div');div.className='page-mini';let strong=document.createElement('strong');strong.textContent=compact(st[1]);let small=document.createElement('small');small.textContent=st[2];div.append(strong,small);$('pageMiniGrid').append(div)});const p=$('pageHeroNum');p.style.fontSize=s.hero>=1e9?'44px':s.hero>=1e6?'49px':'61px';animateNum(p,s.hero,true);
+ document.querySelectorAll('.section-tab').forEach((b,i)=>{const a=i===index;b.classList.toggle('active',a);if(a){b.setAttribute('aria-current','page')}else{b.removeAttribute('aria-current')}});$('prevBtn').disabled=index===0||animating;$('nextBtn').disabled=animating||index===t.sections.length-1;renderScene();}
+function setScenePose(){const sc=SCENES[index];const holder=$('bookHolder');holder.style.setProperty('--book-left',sc.left);holder.style.setProperty('--book-top',sc.top);holder.style.setProperty('--book-z',sc.z);holder.style.setProperty('--mobile-z',sc.mobileZ);rx=sc.rx;ry=sc.ry;updateTilt();$('stage').dataset.scene=String(index)}
+function renderScene(){const t=DATA[lang],s=t.sections[index];$('sceneKicker').textContent=String(index+1).padStart(2,'0')+' / 05 · '+s.kicker;$('sceneTitle').textContent=s.title;$('sceneCaption').textContent=window.innerWidth<=750?(lang==='ar'?'دوّر المصحف · اسحب خارج المصحف لتبديل المشاهد':'Rotate book · Swipe outside to change scenes'):(lang==='ar'?'اسحب لتدوير المصحف · تنقّل بين المشاهد بالأسهم':'Drag to rotate · Use the arrows to explore the scenes');
+ const hud=$('hudLayer');hud.innerHTML='';s.stats.forEach((st,i)=>{const card=document.createElement('div');card.className='hud-card hud-'+i;card.style.setProperty('--hud-i',String(i));const tag=document.createElement('div');tag.className='hud-topline';tag.textContent=(lang==='ar'?'حقيقة':'FACT')+' · '+String(i+1).padStart(2,'0');const value=document.createElement('strong');value.className='hud-value';value.setAttribute('dir','ltr');const digits=document.createElement('span');digits.className='hud-main';value.append(digits);const label=document.createElement('div');label.className='hud-label';label.textContent=st[2];const meta=document.createElement('div');meta.className='hud-meta';meta.textContent=st[3];card.append(tag,value,label,meta);hud.append(card);const valueNum=st[1];animateNum(digits,valueNum,true);if(index===3 && (i===1||i===2||i===3)){const mark=document.createElement('small');mark.textContent='+';mark.style.fontSize='.53em';mark.style.verticalAlign='15%';mark.style.marginInlineStart='3px';value.append(mark)}});
+ const dots=$('sceneProgress');if(!dots.children.length){for(let i=0;i<5;i++){const b=document.createElement('button');b.type='button';b.className='scene-dot';b.setAttribute('aria-label',(lang==='ar'?'الانتقال للمشهد ':'Go to scene ')+(i+1));b.addEventListener('click',()=>goTo(i));dots.append(b)}}Array.from(dots.children).forEach((b,i)=>{b.classList.toggle('active',i===index);b.setAttribute('aria-current',i===index?'step':'false');b.setAttribute('aria-label',(lang==='ar'?'الانتقال للمشهد ':'Go to scene ')+(i+1)+': '+t.tabs[i])})}
+function setBookClosed(){opened=false;$('bookHolder').classList.remove('opened');$('bookCover').setAttribute('aria-expanded','false');$('openBtnText').textContent=DATA[lang].open;$('openArrow').textContent='↗';$('stageHint').textContent=DATA[lang].hintClosed}
+function flip(next){if(animating||next===index||next<0||next>=DATA[lang].sections.length)return;
+ const stage=$('stage'),direction=next>index?'left':'right';if(reducedMotion()){setBookClosed();index=next;setScenePose();render();sizeBook();return}
+ animating=true;$('prevBtn').disabled=true;$('nextBtn').disabled=true;stage.classList.remove('motion-enter-left','motion-enter-right');stage.classList.add('motion-exit-'+direction);
+ window.setTimeout(()=>{stage.classList.remove('motion-exit-'+direction);setBookClosed();index=next;setScenePose();render();sizeBook();stage.classList.add('motion-enter-'+direction)},490);
+ window.setTimeout(()=>{stage.classList.remove('motion-enter-'+direction);animating=false;$('prevBtn').disabled=index===0;$('nextBtn').disabled=index===DATA[lang].sections.length-1},1350);
+}
+function goTo(i){flip(i)}
+function openBook(force){if(animating)return;if(typeof force==='boolean')opened=force;else opened=!opened;$('bookHolder').classList.toggle('opened',opened);$('bookCover').setAttribute('aria-expanded',String(opened));$('openBtnText').textContent=opened?DATA[lang].close:DATA[lang].open;$('openArrow').textContent=opened?'↙':'↗';$('stageHint').textContent=opened?DATA[lang].hintOpen:DATA[lang].hintClosed;render()}
+function updateTilt(){const core=$('bookCore');core.style.setProperty('--rx',rx+'deg');core.style.setProperty('--ry',ry+'deg')}
+function sizeBook(){const w=$('stage').clientWidth;const mobile=w<=750;const scale=mobile?Math.min(.76,Math.max(.52,(w-25)/525)):Math.min(1.15,Math.max(.78,(w-10)/1100));$('bookHolder').style.setProperty('--scale',scale);$('bookHolder').style.setProperty('--mobile-top','35%');$('bookHolder').style.setProperty('--mobile-z',SCENES[index].mobileZ)}
+$('langToggle').addEventListener('click',()=>{lang=lang==='en'?'ar':'en';applyLanguage()});$('themeToggle').addEventListener('click',()=>{dark=!dark;applyTheme()});$('resetView').addEventListener('click',()=>{rx=SCENES[index].rx;ry=SCENES[index].ry;updateTilt()});$('openBtn').addEventListener('click',()=>openBook());$('bookCover').addEventListener('click',()=>{if(!opened&&!suppressClick)openBook(true)});$('bookCover').addEventListener('keydown',e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();openBook(true)}});
+$('prevBtn').addEventListener('click',()=>flip(index-1));$('nextBtn').addEventListener('click',()=>flip(index+1));
+const interactive=$('stage');interactive.addEventListener('pointerdown',e=>{if(e.button!==0&&e.pointerType!=='touch')return;drag={x:e.clientX,y:e.clientY,rx,ry,active:false,id:e.pointerId,onBook:!!e.target.closest('#bookHolder')};suppressClick=false});
+interactive.addEventListener('pointermove',e=>{if(!drag||e.pointerId!==drag.id)return;const dx=e.clientX-drag.x,dy=e.clientY-drag.y;if(Math.hypot(dx,dy)>6)drag.active=true;if(!drag.active)return;if(e.pointerType==='touch'&&!drag.onBook)return;interactive.classList.add('dragging');if(e.pointerType==='touch'&&Math.abs(dy)>Math.abs(dx)*1.5)return;if(!interactive.hasPointerCapture(e.pointerId))try{interactive.setPointerCapture(e.pointerId)}catch(_e){};ry=Math.max(-33,Math.min(33,drag.ry+dx*.105));rx=Math.max(-20,Math.min(22,drag.rx-dy*.085));updateTilt()});
+interactive.addEventListener('pointerup',e=>{if(drag&&drag.active){suppressClick=true;setTimeout(()=>suppressClick=false,120);if(e.pointerType==='touch'&&!drag.onBook){const dx=e.clientX-drag.x,dy=e.clientY-drag.y;if(Math.abs(dx)>65&&Math.abs(dx)>Math.abs(dy)*1.35)flip(index+(dx<0?1:-1))}}drag=null;interactive.classList.remove('dragging');if(interactive.hasPointerCapture(e.pointerId))interactive.releasePointerCapture(e.pointerId)});interactive.addEventListener('pointercancel',()=>{drag=null;interactive.classList.remove('dragging')});
+window.addEventListener('keydown',e=>{const focus=document.activeElement;if(focus&&['INPUT','TEXTAREA','SELECT'].includes(focus.tagName))return;if(e.key==='ArrowRight'){e.preventDefault();flip(lang==='ar'?index-1:index+1)}else if(e.key==='ArrowLeft'){e.preventDefault();flip(lang==='ar'?index+1:index-1)}else if(e.key==='Escape'&&opened){openBook(false)}});
+window.addEventListener('resize',sizeBook,{passive:true});setScenePose();applyLanguage();sizeBook();
+})();
+</script>
+</body>
+</html>
